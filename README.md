@@ -1,4 +1,4 @@
-# HeartDiseaseAnalysis
+# Heart Disease Analysis
 
 Midterm project for STA160 at UC Davis
 
