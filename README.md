@@ -2,24 +2,29 @@
 
 Midterm project for STA160 at UC Davis
 
+Research Question(s):
+- Is it appropriate to classify observations into heart-disease/no-heart disease? I.e. are these two classes singificantly different?
+- Which variables are significant in predicting the response (heart-disease/no heart-disease) ? 
+- Which algorithm predicts heart disease with the highest accuracy?
+
 EDA:
 - Summary statistics (count, mean, sd, min, quartiles, max)
-- Histogram (frequency of each variable value)
-- Correlation heatmap
-
-Research Question(s):
-- 
+- Histograms of significant variables
+- Contingency Tables + Shannon Entropy
+- Hierarchical clustering [Kevin]
 
 Analysis:
 - Independence test 
    -  parametric chi-sq test for independence 
-   -  nonparametric permutation test 
+   -  nonparametric permutation test [Kevin]
 - K-sample test (does level i of variable X have a significant effect on heart-disease?)
-   - ANOVA (parametric)
-   - Kruskal-Wallis Test
+   - Kruskal-Wallis Test [Kevin]
 
-ML: (binary classifiers since heart-disease is a categorical {1,0} )
+Prediction: 
+- LDA
+- Logistic Regression
 - SVM
 - Naive Bayes
-- kNN
-- k-means clustering
+- Decision Tree
+- kNN 
+- k-means clustering [Kevin]
