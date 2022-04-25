@@ -17,8 +17,7 @@ Analysis:
 - Independence test 
    -  parametric chi-sq test for independence 
    -  nonparametric permutation test [Kevin]
-- K-sample test (does level i of variable X have a significant effect on heart-disease?)
-   - Kruskal-Wallis Test [Kevin]
+- K-sample Kruskal-Wallis Test [Kevin]
 
 Prediction: 
 - LDA
