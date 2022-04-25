@@ -17,7 +17,7 @@ Analysis:
 - Independence test 
    -  parametric chi-sq test for independence 
    -  nonparametric permutation test [Kevin]
-- K-sample Kruskal-Wallis Test [Kevin]
+- K-groups Kruskal-Wallis Test [Kevin]
 
 Prediction: 
 - LDA
