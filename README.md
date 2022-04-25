@@ -25,5 +25,5 @@ Prediction:
 - SVM
 - Naive Bayes
 - Decision Tree
-- kNN 
+- kNN [Kevin]
 - k-means clustering [Kevin]
