@@ -71,7 +71,7 @@ library(viridis)
 
 ### 0: Pre-processing for K-groups
 ```{r}
-dat <- read.csv("C:/Users/kxu97/OneDrive/Documents/School/2021-2022/Spring '22/STA160/data/heart_disease_health_indicators_BRFSS2015.csv")
+dat <- read.csv("heart_disease.csv")
 
 age <- dat %>% select(HeartDiseaseorAttack, Age) %>% as_tibble() 
 age$Rank = rank(age$HeartDiseaseorAttack, ties = "average") #rank column
