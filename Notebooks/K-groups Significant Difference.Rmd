@@ -1,0 +1,259 @@
+---
+title: "KW Test for whether K-groups are significantly different"
+author: "Kevin Xu"
+date: "11/29/2021"
+output:
+  html_document:
+    df_print: paged
+---
+KS test is a nonparametric method to compare whether k-groups are significantly different. It functions in a way similar to ANOVA except ranks are used. I've designed a post-hoc test (in the case that k-groups are significantly different), where we examine which of the k groups are signficantly different. For this, we use a Bonferroni correction and Tukey's HSD inspired correction to identify if two groups are significantly different at a significance level: $\alpha$. 
+
+Below we only test if age groups have a significant different effect on the affliction of heart-disease. Note: Think about applying these tests to GenHlth. 
+
+--------------------------------------------
+## Outline of Procedure:
+1. Kruskal-Wallis K-groups Test for Significant Differences between the CDF of each Age group wrt HeartDisease affliction. 
+
+$$H_0: F_{1}(x) = F_{2}(x) = ... = F_{12}(x) = F_{13}(x)$$
+
+$$H_A: F_{i}(x) \ge F_{j}(x) or F_{i}(x) \ge F_{j}(x), i \ne j$$
+
+(i.e. Density function of all 13 age groups with respect to Heart disease is equal vs At least one density function is different from the rest.)
+
+$$KW_{obs} = \frac{1}{(S_R)^2}\sum^{k}_{i=1}{n_{i}(\bar{R_{i}} - \frac{N+1}{2})^{2}}$$
+,where 
+
+$(S_R)^2$: variance of ranks regardless of group,
+$\bar{R_{i}}$ : mean rank of group i, $i=1,...,k$,
+$n_i$ : sample size of group i, $i=1,...,k$,
+$N$: overall sample size
+
+###Procedure:
+* We randomly permute k groups R times (R=3000) and find KW_i for all R permutations.
+
+P-value = Number of $KW_i \ge KW_{obs}$ 
+
+Decision Rule:
+Reject $H_0$ if $Pvalue < alpha$ 
+
+
+2. Large Sample Approximation to Kruskal Wallis Test
+* This can be understood as a "ranked" version of ANOVA. 
+
+$H_0: F_{1}(x) = F_{2}(x) = ... = F_{12}(x) = F_{13}(x)$ 
+$H_A: F_{i}(x) \ge F_{j}(x) or F_{i}(x) \ge F_{j}(x), i \ne j$
+
+$KW_{obs} = \frac{1}{(S_R)^2}\sum^{k}_{i=1}{n_{i}(\bar{R_{i}} - \frac{N+1}{2})^{2}} \sim \chi^{2}_{k-1}$ 
+
+P-value $= P(\chi^{2}_{k-1} > KW_{obs})$
+
+Decision Rule:
+Reject $H_0$ if $Pvalue < alpha$ 
+
+
+---------------------------------------
+
+
+```{r, eval = TRUE, include = FALSE}
+rm(list=ls(all=TRUE))
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(ggrepel)
+library(stringr)
+library(knitr)
+library(kableExtra)
+library(ggplot2)
+library(viridis)
+```
+
+### 0: Pre-processing for K-groups
+```{r}
+dat <- read.csv("C:/Users/kxu97/OneDrive/Documents/School/2021-2022/Spring '22/STA160/data/heart_disease_health_indicators_BRFSS2015.csv")
+
+age <- dat %>% select(HeartDiseaseorAttack, Age) %>% as_tibble() 
+age$Rank = rank(age$HeartDiseaseorAttack, ties = "average") #rank column
+
+Age <- age$Age %>% as.factor()
+Heart <- age$HeartDiseaseorAttack
+```
+
+```{r}
+plot <- ggplot(age, aes(x = HeartDiseaseorAttack)) + 
+  geom_bar( aes(color = Age), fill = "white") + 
+  geom_text(stat='count', aes(label=..count..), vjust=-0.1, size = 1.5) + 
+  facet_grid(Age ~.) +
+  labs(caption = "Figure 1: Number of people with and without heart disease from each age group.") + 
+  theme(plot.caption = element_text(hjust = 0.5),plot.title = element_text(hjust = 0.5)) + 
+  xlab("Heart disease (1.0: Yes, 0.0: No)")+
+  ylab("Frequency") + 
+  ggtitle("Frequency of People with and Without Heart Disease by Age")
+
+plot
+```
+
+
+### 1. Kruskal Wallis Test using Permutation Test
+
+```{r}
+Group.order = aggregate(HeartDiseaseorAttack ~ Age, data = age, mean)$State
+Xi = aggregate(HeartDiseaseorAttack ~ Age, data = age, mean)$HeartDiseaseorAttack
+si = aggregate(HeartDiseaseorAttack ~ Age, data = age, sd)$HeartDiseaseorAttack
+Ri = aggregate(Rank ~ Age, data = age, mean)$Rank
+ni = aggregate(HeartDiseaseorAttack ~ Age, data = age, length)$HeartDiseaseorAttack
+results = rbind(Xi,si,Ri,ni)
+rownames(results) = c("Group Mean","Group SD","Rank Mean","Sample Size")
+colnames(results) = as.character(Group.order)
+results
+```
+
+We observe the Heart Disease onset (0 or 1) for 13 age groups:
+
+\begin{table}[!h]
+\centering
+\begin{tabular}{|l|l|l|l|l|l|l|l|l|l|l|l|l|}
+\hline
+            & Age group 1  & Age group 2  & Age group 3  & Age group 4  & Age group 5  & Age group 6  & Age group 7  & Age group 8  & Age group 9  & Age group 10 & Age group 11 & Age group 12 & Age group 13 \\ \hline
+Group Mean  & 5.087719e-03 & 7.107133e-03 & 1.132788e-02 & 1.396224e-02 & 2.172433e-02 & 3.592512e-02 & 5.415368e-02 & 7.307343e-02 & 1.010107e-01 & 1.302417e-01 & 1.677219e-01 & 1.935544e-01 & 2.395323e-01 \\ \hline
+Group SD    & 7.115281e-02 & 8.400923e-02 & 1.058327e-01 & 1.173384e-01 & 1.457865e-01 & 1.861082e-01 & 2.263250e-01 & 2.602612e-01 & 3.013474e-01 & 3.365743e-01 & 3.736271e-01 & 3.950961e-01 & 4.268104e-01 \\ \hline
+Rank Mean   & 1.155393e+05 & 1.157955e+05 & 1.163308e+05 & 1.166650e+05 & 1.176495e+05 & 1.194507e+05 & 1.217629e+05 & 1.241626e+05 & 1.277062e+05 & 1.314139e+05 & 1.361678e+05 & 1.394444e+05 & 1.452763e+05  \\ \hline
+Sample Size & 5.700000e+03 & 7.598000e+03 & 1.112300e+04 & 1.382300e+04 & 1.615700e+04 & 1.981900e+04 & 2.631400e+04 & 3.083200e+04 & 3.324400e+04 & 3.219400e+04 & 2.353300e+04 & 1.598000e+04 & 1.736300e+04  \\ \hline
+
+\end{tabular}
+\caption{The sample sizes for each of the states are small, which is one of the reasons why a nonparametric test is more appropriate for this dataset.}
+\end{table}
+
+N = 253,680
+
+
+```{r}
+
+# Warning: This chunk might crash your machine. If it doesn't it will certainly take a long time to run.
+"
+SR.2 = var(age$Rank)
+N = nrow(age)
+K = length(unique(age$Age))
+KW.OBS = 1/SR.2*sum(ni*(Ri - (N+1)/2)^2) #Note, this assumes you calculate ni and Ri above
+set.seed(3000)
+R = 1000
+many.perms.KW = sapply(1:R,function(i){
+  permuted.data = age #So we don't overwrite the original data
+  permuted.data$Age = sample(permuted.data$Age, nrow(permuted.data), replace = FALSE) #Permuting the groups
+  SR.2 = var(permuted.data$Rank)
+  ni = aggregate(Rank ~ Age, data = permuted.data,length)$Rank
+  Ri = aggregate(Rank ~ Age, data = permuted.data,mean)$Rank
+  KW.i= 1/SR.2*sum(ni*(Ri - (N+1)/2)^2) 
+  return(KW.i)
+})
+p.value = mean(many.perms.KW > KW.OBS)
+p.value
+"
+```
+
+
+
+### 2. (a) Large Sample Approximation to Kruskal Wallis
+
+* This is applicable since each ith age group (i=1,...,k) has over 5000 observations.
+
+```{r}
+SR.2 = var(age$Rank)
+SR.2
+N = nrow(age) 
+K = length(unique(age$Age))
+SST_rank = 1/SR.2*sum(ni*(Ri - (N+1)/2)^2) #Note, this assumes you calculate ni and Ri aboves
+p_val = pchisq(SST_rank,K-1, lower.tail=FALSE)
+SST_rank
+p_val
+```
+
+* From our large sample approximation to the Kruskal-Wallis test, we observed a KS test statistic of 13730.99 which is distributed under a Chi-squared distribution with K-1 = 12 degrees of freedom. 
+
+* The associated p-value of our test statistic is approximately 0. 
+
+* Based on our highly significant p-value $\approx 0$, we reject $H_0$ and conclude $H_A: F_{i}(x) \ge F_{j}(x) or F_{i}(x) \ge F_{j}(x), i \ne j, (i,j = 1,...,k)$. 
+
+  - In other words, assuming that there are no differences between age groups on heart-disease, we would observe our data or more extreme with a probability of approximately 0. Age appears to have a significant affect on whether a given person has heart disease.
+
+* Based on these results we conduct a post-hoc test to identify which of the k groups are significantly different.
+
+
+
+### 2. (b) Multiple Comparisons: Which of the k age groups are significantly different in their effect on heart-disease.
+
+* Options: (i) Bonferroni Correction, (ii) Tukey's Honest Significant Difference Correction.
+
+----------------------------------
+Procedure Outline: 
+  - We pick significance level $alpha = 0.05$. 
+  - We find pairwise comparisons between each age group and compare them with the cutoff values obtained via Bonferroni and Tukey's HSD. 
+  - If the pairwise comparisons are greater than that of the cutoff values, then we conclude that the groups are significantly different. 
+-------------------------------------
+
+
+* Summary statistics for reference:
+  - Overall sample size: $N = 253,680$
+  - Sample Variance (rank): $(SR)^2$ = 1372580608
+  - Number of pairwise comparisons: 13C2 = 78 possible pairs of our 13 age groups
+
+* Formulas for Cutoff Values: 
+  - Bonferroni Cutoff Value: $Z_{1-\frac{\alpha}{2g}} * \sqrt{(SR)^2 * (\frac{1}{n_i} + \frac{1}{n_j})}$
+  - Tukey's HSD Cutoff Value: $q(\alpha, k, df=N-k)\sqrt{\frac{(SR)^2}{2} * (\frac{1}{n_i} + \frac{1}{n_j})}$
+  - Note: q is the studentized range statistic.
+  
+* Conclusions:
+  - The same groups are significantly different for both types of corrections.
+  - All pairs with age group 5-13 are significantly different
+  - Age group i +-1 is not significantly different for i=1,2,3
+  - Age group 4 is not significantly different from 3, but is significantly different from 5
+  - By the Bonferroni correction and Tukey's HSD correction, all pairwise combinations of age groups appear to have a significantly different affect on whether a given person has heart disease.
+  
+
+```{r}
+# Finding Bonferroni and Tukey's HSD cutoff values 
+
+# Cutoffs
+bon = array(0,dim = c(13, 13)) 
+tukey = array(0,dim=c(13,13))
+# Row i, Colj: Bonferroni cutoff values for pairwise comparison between age group i and j 
+
+# Conclusions
+sig_diff_bon = array(1:169, dim=c(13,13)) 
+sig_diff_tukey = array(1:169, dim=c(13,13)) 
+# if entry (i,j) = 1, there is a significant difference between age group i and j
+sig_diff_bon
+
+for (i in 1:13){ # iterate through all age groups 
+  for (j in 1:13){ # iterate through all age groups 
+    bon[i,j] = qnorm(1-0.05/78,lower.tail=TRUE) * sqrt(SR.2 * ((1/results[4,i]) + (1/results[4,j])))
+    tukey[i,j] = qtukey(0.05,K, N-K) * sqrt(SR.2/2 * ((1/results[4,i]) + (1/results[4,j])))
+    if (abs(results[3,i] - results[3,j]) > bon[i,j]){
+      sig_diff_bon[i,j] = 1
+    }
+    if (abs(results[3,i] - results[3,j]) > tukey[i,j]){
+      sig_diff_tukey[i,j] = 1
+    }
+    else{
+      sig_diff_bon[i,j] = 0
+      sig_diff_tukey[i,j] = 0 
+    }
+  }
+}
+sig_diff_bon 
+sig_diff_tukey 
+# Results are identical for both types of corrections.
+# all pairs with age group 5-13 are significantly different
+# Age group +-1 age category is not significantly different for i=1,2,3
+# Age group 4 is not significantly different from 3, but is significantly different from 5
+
+
+```
+
+
+## Appendix:
+```{r, ref.label=knitr::all_labels(),echo=TRUE,eval=FALSE}
+```
+
+
