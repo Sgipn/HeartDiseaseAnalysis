@@ -11,13 +11,12 @@ EDA:
 - Summary statistics (count, mean, sd, min, quartiles, max)
 - Histograms of significant variables
 - Contingency Tables + Shannon Entropy
-- Hierarchical clustering [Kevin]
+- Hierarchical clustering
 
 Analysis:
 - Independence test 
    -  parametric chi-sq test for independence 
-   -  nonparametric permutation test [Kevin]
-- K-groups Kruskal-Wallis Test [Kevin]
+- K-groups Kruskal-Wallis Test
 
 Prediction: 
 - LDA
@@ -25,5 +24,3 @@ Prediction:
 - SVM
 - Naive Bayes
 - Decision Tree
-- kNN [Kevin]
-- k-means clustering [Kevin]
