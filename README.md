@@ -24,3 +24,10 @@ Prediction:
 - SVM
 - Naive Bayes
 - Decision Tree
+
+
+How to navigate this repository:
+`Notebooks` contains all jupyter notebooks used for EDA, Statistical analysis, and Prediction scripting.
+`Visualizations` contains some additional jupyter notebooks containing EDA visualizations.
+`data` contains the cleaned data sourced from kaggle.com (https://www.kaggle.com/datasets/alexteboul/heart-disease-health-indicators-dataset)
+`Analysis_of_Heart_Disease` is a report containing EDA interpretations, statistical analysis results, prediction procedures and final conclusions extracted from our data. 
